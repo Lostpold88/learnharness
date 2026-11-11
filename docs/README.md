@@ -5,6 +5,7 @@
 - [Getting started](getting-started.md) — connections, models, sessions, dictation, files, and notes imports.
 - [Keyboard shortcuts](keyboard.md) — defaults, rebinding, and navigation.
 - [Claude Code](claude-code.md) — use an installed CLI and troubleshoot its connection.
+- [Antigravity](agy.md) — use the installed `agy` CLI and its model families; [parity gaps](agy-parity.md) lists what Claude Code can do that it cannot yet.
 - [Custom and local models](custom-providers.md) — configure an OpenAI-compatible endpoint.
 - [Context, caching, and costs](compaction-accounting.md) — understand the session meters and advanced cache preferences.
 - [Learning-data skill](../skills/learnharness/SKILL.md) — a read-only guide and standalone readers for local learning records.

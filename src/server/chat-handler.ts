@@ -40,6 +40,7 @@ import { prepareSubmissionImages, prepareSubmissionImageChannels, prepareProblem
 import { preparePluginProblemSubmission, requirePluginProblemTarget, type ProblemTypeResolver } from "./plugin-problems.ts";
 import { providerKeyPresent } from "./keys.ts";
 import { CLAUDE_CODE_PROVIDER } from "../core/contracts/claude-code.ts";
+import { AGY_PROVIDER } from "../core/contracts/agy.ts";
 import {
 	extractionEnabled,
 	graphToolsEnabled,
@@ -100,7 +101,7 @@ import type {CallUsage} from "../core/contracts.ts";
 /** Fresh check only at new background-run admission; never cancel a run
  * already in progress when the opt-in is switched off. */
 function connectionBackgroundAllowed(provider: string): boolean {
-	return subscriptionBackgroundAllowed(provider) && (provider !== CLAUDE_CODE_PROVIDER || providerKeyPresent(provider));
+	return subscriptionBackgroundAllowed(provider) && ((provider !== CLAUDE_CODE_PROVIDER && provider !== AGY_PROVIDER) || providerKeyPresent(provider));
 }
 
 function settlementErrorText(error: unknown): string {

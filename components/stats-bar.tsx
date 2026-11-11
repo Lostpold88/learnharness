@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
-import { CLAUDE_CODE_PROVIDER, sessionCacheHitRate, subscriptionLabels, subscriptionLabel, type cliContextWindowOf, type SessionPricing, type TurnUsage } from "@/src/core";
+import { AGY_PROVIDER, CLAUDE_CODE_PROVIDER, sessionCacheHitRate, subscriptionLabels, subscriptionLabel, type cliContextWindowOf, type SessionPricing, type TurnUsage } from "@/src/core";
 import { formatTokens, formatUsd, planCostLabel, prettyModel } from "@/components/usage-format";
 import { ModelControl, catalogLimits, useModelCatalog } from "@/components/model-picker";
 import { usePopoverDismiss } from "@/components/popover-dismiss";
@@ -12,12 +12,19 @@ export function formatContextMeasurement(tokens: number | null, limit: number | 
 	return limit === null ? numerator : `${numerator} / ${formatTokens(limit)}`;
 }
 
+/** Native CLI model ids (`provider:id`): billed by the CLI, never estimated. */
+function isCliModel(model: string): boolean {
+	return model.startsWith(`${CLAUDE_CODE_PROVIDER}:`) || model.startsWith(`${AGY_PROVIDER}:`);
+}
+
 /** CLI aliases have no global catalog limit: only this session's matching
  * response can supply a denominator. Other providers keep their catalog join. */
 export function contextLimitForModel(model: string | undefined, limits: ReadonlyMap<string, number> | undefined,
 	cliWindow: ReturnType<typeof cliContextWindowOf> = null): number | null {
 	if (!model) return null;
 	if (model.startsWith(`${CLAUDE_CODE_PROVIDER}:`)) return cliWindow?.model === model ? cliWindow.tokens : null;
+	// agy reports no window at all.
+	if (model.startsWith(`${AGY_PROVIDER}:`)) return null;
 	return limits?.get(model) ?? null;
 }
 
@@ -93,7 +100,7 @@ export function StatsBar({
 	// otherwise "—" (never a fake $0.0000).
 	const pricedCount = turns.length - unpriced - subscription;
 	const providers = pricing?.subscriptionProviders ?? subscriptionLabels(turns.map((turn) => turn.model));
-	const cliBilled = turns.some((turn) => turn.model.startsWith(`${CLAUDE_CODE_PROVIDER}:`));
+	const cliBilled = turns.some((turn) => isCliModel(turn.model));
 	const costLabel = planCostLabel(pricedCount > 0 ? cost : null, cliBilled ? [...providers, "CLI"] : providers);
 
 	return (
@@ -186,7 +193,7 @@ export function StatsBar({
 												</span>
 												<span className="flex shrink-0 items-center gap-2 tabular-nums text-card-foreground">
 													<span className="text-muted-foreground">{turn.steps.length} steps</span>
-													<span>{turn.model.startsWith(`${CLAUDE_CODE_PROVIDER}:`) ? "CLI" : subscriptionLabel(turn.model) ?? (c === null ? "—" : formatUsd(c))}</span>
+													<span>{isCliModel(turn.model) ? "CLI" : subscriptionLabel(turn.model) ?? (c === null ? "—" : formatUsd(c))}</span>
 												</span>
 											</li>
 										);
